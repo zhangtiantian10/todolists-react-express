@@ -13,7 +13,7 @@ class App extends React.Component {
     }
 
     addList(value) {
-        $.post('/app/todolist', {list: {value, static: true}}, (lists) => {
+        $.post('/app/todolist', {value: value}, (lists) => {
             this.setState({lists});
         }, 'json')
     }
@@ -46,6 +46,7 @@ class App extends React.Component {
         return <div>
             <AddList onAdd={this.addList.bind(this)}/>
             <ShowLists lists={this.state.lists} onDelete={this.deleteList.bind(this)} onChangeStatic={this.modifyStatic.bind(this)}/>
+            <Footer count={this.state.lists.filter(list => list.static === true).length}/>
         </div>;
     }
 }
@@ -82,9 +83,9 @@ class ShowLists extends React.Component {
         const lists = this.props.lists.map((list, index) => {
             return <div key={index}>
                 <li>
-                    <CheckBox onChangeStatic={this.props.onChangeStatic} index={index} static={list.static}/>
+                    <CheckBox onChangeStatic={this.props.onChangeStatic} index={list.index} static={list.static}/>
                     {list.static ? list.value : <s>{list.value}</s>}
-                    <button onClick={this.deleteList.bind(this, index)}>删除</button>
+                    <button onClick={this.deleteList.bind(this, list.index)}>删除</button>
                 </li>
             </div>;
         })
@@ -118,5 +119,17 @@ class CheckBox extends React.Component {
         return <input type="checkbox" onChange={this.changeStatic.bind(this)} checked={this.state.checked}/>
     }
 }
+
+class Footer extends React.Component {
+    render() {
+        return <div>
+            {this.props.count} items left
+            <button>All</button>
+            <button>Active</button>
+            <button>Completed</button>
+        </div>
+    }
+}
+
 
 ReactDOM.render(<App/>, document.getElementById('content'));
