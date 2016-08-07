@@ -61,11 +61,11 @@ class App extends React.Component {
     }
 
     render() {
-        const count = this.state.lists.filter(list => list.static === true).length;
+        const count = this.state.lists.filter(list => list.static).length;
         return <div  className="col-md-6 col-md-offset-3">
             <AddList onAdd={this.addList.bind(this)}/>
             <ShowLists lists={this.state.lists} onDelete={this.deleteList.bind(this)} onChangeStatic={this.modifyStatic.bind(this)} footerFlag={this.state.footerFlag}/>
-            {count === 0 ? "" : <Footer count={count} onFooterChange={this.changeFooter.bind(this)} onDelete={this.deleteAllCompleted.bind(this)}/>}
+            {this.state.lists.length === 0 ? "" : <Footer count={count} onFooterChange={this.changeFooter.bind(this)} onDelete={this.deleteAllCompleted.bind(this)}/>}
         </div>;
     }
 }
@@ -119,7 +119,7 @@ class ShowLists extends React.Component {
                 <li className="list-group-item">
                     <CheckBox onChangeStatic={this.props.onChangeStatic} index={list.index} static={list.static}/>
                     {list.static ? list.value : <s>{list.value}</s>}
-                    <button type="button" className="btn btn-link pull-right " onClick={this.deleteList.bind(this, list.index)}>
+                    <button type="button" className="btn btn-link pull-right color" onClick={this.deleteList.bind(this, list.index)}>
                         <span className="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
                     </button>
                 </li>
