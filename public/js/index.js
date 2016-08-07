@@ -37,9 +37,7 @@ class App extends React.Component {
             dataType: "json",
             data: {index: index},
             success:((lists) => {
-                this.setState({lists},() => {
-                    console.log(lists);
-                });
+                this.setState({lists});
             })
         });
     }
@@ -71,16 +69,21 @@ class AddList extends React.Component {
 }
 
 class ShowLists extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {list: {}}
+    }
     deleteList(index) {
         this.props.onDelete(index);
-    }
 
+    }
+    
     render() {
         const lists = this.props.lists.map((list, index) => {
             return <div key={index}>
                 <li>
-                    <CheckBox onChangeStatic={this.props.onChangeStatic} index={index}/>
-                    {list.value}
+                    <CheckBox onChangeStatic={this.props.onChangeStatic} index={index} static={list.static}/>
+                    {list.static ? list.value : <s>{list.value}</s>}
                     <button onClick={this.deleteList.bind(this, index)}>删除</button>
                 </li>
             </div>;
@@ -98,13 +101,13 @@ class CheckBox extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            checked: false
+            checked: !this.props.static
         }
     }
 
     changeStatic() {
         this.setState({
-            checked: !this.state.checked
+            checked: this.props.static
         });
 
         this.props.onChangeStatic(this.props.index);
