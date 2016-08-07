@@ -49,6 +49,20 @@ app.put('/app/todolist', (req, res) => {
     lists[index].static = !lists[index].static;
 
     res.json(lists);
+});
+
+app.delete('/app/todolists', (req, res) => {
+    const completes = lists.filter(list => !list.static);
+
+    completes.forEach(complete => {
+        for(let j = 0; j < lists.length; j++) {
+            if(lists[j].index === complete.index) {
+                lists.splice(j,1);
+            }
+        }
+    });
+
+    res.json(lists);
 })
 
 app.listen(3000, () => {

@@ -2,7 +2,8 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            lists: []
+            lists: [],
+            footerFlag: 'All'
         }
     }
 
@@ -42,11 +43,29 @@ class App extends React.Component {
         });
     }
 
+    changeFooter(type) {
+        this.setState({
+            footerFlag: type
+        });
+    }
+
+    deleteAllCompleted() {
+        $.ajax({
+            url: '/app/todolists',
+            type: 'DELETE',
+            dataType: "json",
+            success:((lists) => {
+                this.setState({lists});
+            })
+        });
+    }
+
     render() {
-        return <div>
+        const count = this.state.lists.filter(list => list.static === true).length;
+        return <div  className="col-md-6 col-md-offset-3">
             <AddList onAdd={this.addList.bind(this)}/>
-            <ShowLists lists={this.state.lists} onDelete={this.deleteList.bind(this)} onChangeStatic={this.modifyStatic.bind(this)}/>
-            <Footer count={this.state.lists.filter(list => list.static === true).length}/>
+            <ShowLists lists={this.state.lists} onDelete={this.deleteList.bind(this)} onChangeStatic={this.modifyStatic.bind(this)} footerFlag={this.state.footerFlag}/>
+            {count === 0 ? "" : <Footer count={count} onFooterChange={this.changeFooter.bind(this)} onDelete={this.deleteAllCompleted.bind(this)}/>}
         </div>;
     }
 }
@@ -64,7 +83,8 @@ class AddList extends React.Component {
 
     render() {
         return <div>
-            <input type="text" id="input" onKeyDown={this.enterChange.bind(this)}/>
+            <h1 className="text-center">todos</h1>
+            <input className="form-control input-lg" placeholder="What needs to be done?" type="text" id="input" onKeyDown={this.enterChange.bind(this)}/>
         </div>
     }
 }
@@ -72,29 +92,43 @@ class AddList extends React.Component {
 class ShowLists extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {list: {}}
+        this.state = {
+            newLists: []
+        }
     }
+
     deleteList(index) {
         this.props.onDelete(index);
 
     }
+
+    getNewLists() {
+        if(this.props.footerFlag === 'All') {
+            return this.props.lists;
+        } else if(this.props.footerFlag === 'Active') {
+            return this.props.lists.filter(list => list.static === true);
+        } else {
+            return this.props.lists.filter(list => list.static === false);
+        }
+    }
     
     render() {
-        const lists = this.props.lists.map((list, index) => {
+        const newLists = this.getNewLists();
+        const lists = newLists.map((list, index) => {
             return <div key={index}>
-                <li>
+                <li className="list-group-item">
                     <CheckBox onChangeStatic={this.props.onChangeStatic} index={list.index} static={list.static}/>
                     {list.static ? list.value : <s>{list.value}</s>}
-                    <button onClick={this.deleteList.bind(this, list.index)}>删除</button>
+                    <button type="button" className="btn btn-link pull-right " onClick={this.deleteList.bind(this, list.index)}>
+                        <span className="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
+                    </button>
                 </li>
             </div>;
-        })
+        });
 
-        return <div>
-            <ul>
+        return <ul className="list-group">
             {lists}
             </ul>
-        </div>
     }
 }
 
@@ -121,13 +155,24 @@ class CheckBox extends React.Component {
 }
 
 class Footer extends React.Component {
+    footerChange(type) {
+        this.props.onFooterChange(type);
+    }
+
+    deleteAllCompleted() {
+        this.props.onDelete();
+    }
+
     render() {
-        return <div>
-            {this.props.count} items left
-            <button>All</button>
-            <button>Active</button>
-            <button>Completed</button>
-        </div>
+        return <footer className="list-group-item">
+            <span>{this.props.count} items left</span>
+            <div className="btn-group" role="group">
+            <button type="button" className="btn btn-link" onClick={this.footerChange.bind(this, 'All')}>All</button>
+            <button type="button" className="btn btn-link" onClick={this.footerChange.bind(this, 'Active')}>Active</button>
+            <button type="button" className="btn btn-link" onClick={this.footerChange.bind(this, 'Completed')}>Completed</button>
+                </div>
+            <button type="button" className="btn btn-link pull-right" onClick={this.deleteAllCompleted.bind(this)}>Clear completed</button>
+            </footer>
     }
 }
 
