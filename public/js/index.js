@@ -6,26 +6,42 @@ class App extends React.Component {
         }
     }
 
-    addList(value) {
-        const lists = this.state.lists;
-        lists.push({value, static: true});
+    componentDidMount() {
+        $.get('/app/todolists', (lists) => {
+            this.setState({lists});
+        })
+    }
 
-        this.setState({lists});
+    addList(value) {
+        $.post('/app/todolist', {list: {value, static: true}}, (lists) => {
+            this.setState({lists});
+        }, 'json')
     }
 
     deleteList(index) {
-        const lists = this.state.lists;
-        lists.splice(index, 1);
-
-        this.setState({lists});
+        $.ajax({
+            url: '/app/todolist',
+            type: 'DELETE',
+            dataType: "json",
+            data: {index: index},
+            success:((lists) => {
+                this.setState({lists});
+            })
+        });
     }
 
     modifyStatic(index) {
-        const lists = this.state.lists;
-        lists[index].static = !lists[index].static;
-
-        this.setState({lists});
-        console.log(lists);
+        $.ajax({
+            url: '/app/todolist',
+            type: 'PUT',
+            dataType: "json",
+            data: {index: index},
+            success:((lists) => {
+                this.setState({lists},() => {
+                    console.log(lists);
+                });
+            })
+        });
     }
 
     render() {
